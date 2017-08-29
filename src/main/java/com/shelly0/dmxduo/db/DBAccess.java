@@ -7,45 +7,89 @@ import java.sql.*;
  */
 public class DBAccess
 {
-    private int a;
-    private int b;
-    private int c;
 
     public DBAccess()
     {
-        try{
+        try
+        {
             Class.forName("org.sqlite.JDBC");
-            Connection c  = DriverManager.getConnection("jdbc:sqlite:database.db");
+            Connection c = DriverManager.getConnection("jdbc:sqlite:database.db");
             System.out.println("Connection ok");
 
             Statement stmt = c.createStatement();
-            String sql = "CREATE TABLE IF NOT EXISTS bestand " +
-                    "(ID INT PRIMARY KEY NOT NULL," +
-                    "barcode CHAR(20) NOT NULL," +
-                    "bezeichnung TEXT NOT NULL," +
-                    "hersteller INT NOT NULL," +
-                    "typ INT NOT NULL," +
-                    "vorhanden INT NOT NULL," +
-                    "zustand INT NOT NULL, " +
-                    "entnahmedatum INT NOT NULL, " +
-                    "einkaufspreis REAL NOT NULL, " +
-                    "kaufdatum INT NOT NULL, " +
-                    "gekauftBei INT NOT NULL, " +
-                    "notiz TEXT NOT NULL)";
+            String sql = "CREATE TABLE IF NOT EXISTS barcodes" +
+                    "(barcode INT PRIMARY KEY NOT NULL," +
+                    "items_itemID INT NOT NULL," +
+                    "lastremoval DATE NOT NULL)";
             stmt.executeUpdate(sql);
-
-
-        /*    stmt.close();
-            stmt = c.createStatement();
-            sql = "...";
-            stmt.executeUpdate(sql); */
-
             stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS items" +
+                    "(itemID INT PRIMARY KEY NOT NULL," +
+                    "title TEXT NOT NULL," +
+                    "manufacturers_manufacturerID INT NOT NULL," +
+                    "typs_typID INT NOT NULL," +
+                    "status_statusID INT NOT NULL," +
+                    "purchasedetails_purchaseID INT NOT NULL," +
+                    "note TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS typs" +
+                    "(typID INT PRIMARY KEY NOT NULL," +
+                    "typ TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS manufacturers" +
+                    "(manufacturerID INT PRIMARY KEY NOT NULL," +
+                    "manufacturer TEXT NOT NULL," +
+                    "note TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS reparings" +
+                    "(reparingID INT PRIMARY KEY NOT NULL," +
+                    "items_itemID INT NOT NULL," +
+                    "date INT NOT NULL," +
+                    "costs REAL NOT NULL," +
+                    "reparer TEXT NOT NULL," +
+                    "note TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS purchase_details" +
+                    "(purchaseID INT PRIMARY KEY NOT NULL," +
+                    "price REAL NOT NULL, " +
+                    "dateofpurchase DATE NOT NULL, " +
+                    "boughtat TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
+            stmt = c.createStatement();
+            sql = "CREATE TABLE IF NOT EXISTS status" +
+                    "(statusID INT PRIMARY KEY NOT NULL," +
+                    "status boolean NOT NULL)";
+            stmt.executeUpdate(sql);
+            stmt.close();
+
+
             c.close();
 
             System.out.println("Table creation ok");
 
-        } catch(ClassNotFoundException | SQLException e)
+        } catch (ClassNotFoundException | SQLException e)
         {
             e.printStackTrace();
         }
@@ -62,19 +106,23 @@ public class DBAccess
             System.out.println("Connection ok");
 
             Statement stmt = c.createStatement();
-            String sql = "SELECT * FROM bestand";
+            String sql;
+            sql = "SELECT * FROM items, manufacturers, purchase_details, reparings, status, typs, barcodes";
+
+
             ResultSet result = stmt.executeQuery(sql);
-            while(result.next())
+            while (result.next())
             {
-                for(int i=1; i<result.getMetaData().getColumnCount(); ++i)
+                for (int i = 1; i < result.getMetaData().getColumnCount(); ++i)
                 {
-                    System.out.print(result.getMetaData().getColumnName(i) + " = "  + result.getString(i) + ", ");
+                    System.out.print(result.getMetaData().getColumnName(i) + " = " + result.getString(i) + ", ");
                 }
                 System.out.println();
             }
             stmt.close();
+
             c.close();
-        } catch(Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
         }
